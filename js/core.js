@@ -209,9 +209,9 @@ class Navigation {
 			});
 
 			this.navToggle.addEventListener('touchstart', (e) => {
-				e.preventDefault();
+				this.toggleMobileMenu();
 			}, {
-				passive: false
+				passive: true
 			});
 
 			this.navLinks.forEach(link => {

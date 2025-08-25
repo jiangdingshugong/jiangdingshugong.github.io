@@ -225,7 +225,15 @@
 
 .magnetic-element {
     transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-    cursor: none;
+}
+
+@media (pointer: fine) {
+    /* custom cursor effect only on fine-pointer devices (mouse) */
+    .magnetic-element { cursor: none; }
+}
+
+@media (pointer: coarse), (max-width: 768px) {
+    .magnetic-element { cursor: auto !important; }
 }
 
 .magnetic-element:hover {
@@ -673,7 +681,6 @@
     }
 }
 
-/* Hide custom cursor and disable magnetic cursor effects on touch / small screens */
 @media (pointer: coarse), (max-width: 768px) {
     .custom-cursor { display: none !important; }
     .magnetic-element { cursor: auto !important; }
