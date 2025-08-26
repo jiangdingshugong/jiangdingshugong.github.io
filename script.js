@@ -85,30 +85,75 @@ class App {
     setupScroll() {
         let lastScroll = 0;
 
+        // Load DOM
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                this.initScrollHandlers();
+            });
+        } else {
+            this.initScrollHandlers();
+        }
+    }
+
+    /** Initialize scroll handlers */
+    initScrollHandlers() {
+        const scrollTopBtn = document.getElementById('scrollTop');
+        console.log('初始化滚动处理器', scrollTopBtn); // Debug
+        
+        // Scroll events
         window.addEventListener('scroll', () => {
-            const scrollY = window.pageYOffset;
+            const scrollY = window.pageYOffset || document.documentElement.scrollTop;
             
             // Navbar scroll effect
-            if (scrollY > 100) {
-                this.navbar.classList.add('scrolled');
-            } else {
-                this.navbar.classList.remove('scrolled');
+            if (this.navbar) {
+                if (scrollY > 100) {
+                    this.navbar.classList.add('scrolled');
+                } else {
+                    this.navbar.classList.remove('scrolled');
+                }
             }
 
             // Scroll to top button
-            if (scrollY > 300) {
-                this.scrollTop.classList.add('visible');
-            } else {
-                this.scrollTop.classList.remove('visible');
+            if (scrollTopBtn) {
+                if (scrollY > 300) {
+                    scrollTopBtn.classList.add('visible');
+                    console.log('显示返回顶部按钮'); // Debug
+                } else {
+                    scrollTopBtn.classList.remove('visible');
+                }
             }
-
-            lastScroll = scrollY;
         });
 
         // Scroll to top functionality
-        this.scrollTop?.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
+        if (scrollTopBtn) {
+            console.log('绑定返回顶部按钮事件');
+            scrollTopBtn.onclick = null;
+            
+            // Add click event
+            const handleScrollTop = (e) => {
+                console.log('返回顶部按钮被点击');
+                e.preventDefault();
+                e.stopPropagation();
+                
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+                
+                if (window.scrollTo) {
+                    setTimeout(() => {
+                        window.scrollTo({ 
+                            top: 0, 
+                            behavior: 'smooth' 
+                        });
+                    }, 10);
+                }
+            };
+            
+            scrollTopBtn.addEventListener('click', handleScrollTop, true);
+            scrollTopBtn.addEventListener('touchstart', handleScrollTop, { passive: false });
+            scrollTopBtn.onclick = handleScrollTop;
+        } else {
+            console.error('找不到返回顶部按钮元素');
+        }
     }
 
         /** Setup contact form */
@@ -135,14 +180,31 @@ class App {
             });
         });
 
-        // Ensure scroll-to-top button is working
-        const scrollTopBtn = document.getElementById('scrollTop');
-        if (scrollTopBtn) {
-            scrollTopBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Contact links event handling
+        document.querySelectorAll('.contact-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                const href = link.getAttribute('href');
+                
+                // Handle geo links for maps
+                if (href.startsWith('geo:')) {
+                    e.preventDefault();
+                    this.openMaps();
+                }
+                // Let the default behavior work for tel: and mailto: links
             });
-        }
+        });
+
+        // QR code link for WeChat
+        document.querySelectorAll('.qr-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const action = link.getAttribute('data-action');
+                
+                if (action === 'wechat') {
+                    this.openWeChat();
+                }
+            });
+        });
     }
 
     /** Validate form field */
@@ -429,6 +491,138 @@ class App {
         }
     }
 
+    /** Open WeChat application */
+    openWeChat() {
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        
+        if (isMobile) {
+            // Try to open WeChat Work app
+            const wechatWorkUrl = 'wxwork://message';
+            const wechatUrl = 'weixin://';
+            
+            // Try WeChat Work first
+            window.location.href = wechatWorkUrl;
+            
+            // Fallback to regular WeChat after a short delay
+            setTimeout(() => {
+                window.location.href = wechatUrl;
+            }, 1000);
+            
+            // If neither works, show instructions
+            setTimeout(() => {
+                this.showWeChatInstructions();
+            }, 2000);
+        } else {
+            // Desktop - show QR code instructions
+            this.showWeChatInstructions();
+        }
+    }
+
+    /** Show WeChat scan instructions */
+    showWeChatInstructions() {
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        `;
+        
+        const content = document.createElement('div');
+        content.style.cssText = `
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: var(--border-radius-lg);
+            text-align: center;
+            max-width: 400px;
+            margin: 1rem;
+            border: 1px solid var(--border-color);
+        `;
+        
+        content.innerHTML = `
+            <h3 style="color: var(--text-primary); margin-bottom: 1rem;">联系我们</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                请使用微信扫描上方二维码联系我们，或发送邮件至：
+            </p>
+            <p style="color: var(--accent-primary); margin-bottom: 1.5rem;">
+                jiangdingshugong@outlook.com
+            </p>
+            <button style="
+                background: var(--gradient-primary);
+                color: var(--bg-primary);
+                border: none;
+                padding: 0.75rem 1.5rem;
+                border-radius: var(--border-radius);
+                cursor: pointer;
+                font-weight: 600;
+            ">知道了</button>
+        `;
+        
+        const closeBtn = content.querySelector('button');
+        closeBtn.addEventListener('click', () => {
+            modal.style.opacity = '0';
+            setTimeout(() => modal.remove(), 300);
+        });
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.opacity = '0';
+                setTimeout(() => modal.remove(), 300);
+            }
+        });
+        
+        modal.appendChild(content);
+        document.body.appendChild(modal);
+        
+        // Fade in
+        setTimeout(() => {
+            modal.style.opacity = '1';
+        }, 10);
+    }
+
+    /** Open maps application with company address */
+    openMaps() {
+        const address = encodeURIComponent('南京市江北新区团结路110号鹏为大厦2008室');
+        const coords = '32.1096,118.6342';
+        
+        // Detect user agent
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isAndroid = /Android/.test(navigator.userAgent);
+        
+        let mapUrl;
+        
+        if (isIOS) {
+            // Try Apple Maps first, fallback to Google Maps
+            mapUrl = `maps://maps.google.com/maps?q=${address}&ll=${coords}`;
+            window.location.href = mapUrl;
+            
+            // Fallback for devices without Apple Maps
+            setTimeout(() => {
+                window.open(`https://maps.google.com/maps?q=${address}`, '_blank');
+            }, 1000);
+        } else if (isAndroid) {
+            // Try Google Maps app, fallback to web
+            mapUrl = `intent://maps.google.com/maps?q=${address}&ll=${coords}#Intent;scheme=https;package=com.google.android.apps.maps;end`;
+            window.location.href = mapUrl;
+            
+            // Fallback to web version
+            setTimeout(() => {
+                window.open(`https://maps.google.com/maps?q=${address}`, '_blank');
+            }, 1000);
+        } else {
+            // Desktop - open web version
+            window.open(`https://maps.google.com/maps?q=${address}`, '_blank');
+        }
+    }
+
     /** Handle direct service links */
     handleDirectServiceLinks(serviceButtons, serviceContents) {
         // Map service IDs to service types
@@ -518,6 +712,37 @@ function addRipple(e) {
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize main app
     new App();
+
+    setTimeout(() => {
+        const scrollTopBtn = document.getElementById('scrollTop');
+        if (scrollTopBtn) {
+            scrollTopBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const scrollToTop = () => {
+                    if (window.scrollTo) {
+                        window.scrollTo({ 
+                            top: 0, 
+                            left: 0,
+                            behavior: 'smooth' 
+                        });
+                    } else {
+                        const scrollStep = -window.scrollY / (500 / 15);
+                        const scrollInterval = setInterval(() => {
+                            if (window.scrollY != 0) {
+                                window.scrollBy(0, scrollStep);
+                            } else {
+                                clearInterval(scrollInterval);
+                            }
+                        }, 15);
+                    }
+                };
+                
+                scrollToTop();
+            }, true);
+        }
+    }, 500);
 
     // Add ripple effect to buttons
     document.querySelectorAll('.btn').forEach(btn => {

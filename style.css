@@ -2291,18 +2291,37 @@ section {
     color: var(--bg-primary);
     cursor: pointer;
     opacity: 0;
-    transform: scale(0);
-    transition: all var(--transition-medium);
-    z-index: 1000;
+    visibility: hidden;
+    transform: scale(0) translateY(20px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 9999;
+    box-shadow: 0 4px 20px rgba(0, 255, 136, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .scroll-top.visible {
     opacity: 1;
-    transform: scale(1);
+    visibility: visible;
+    transform: scale(1) translateY(0);
 }
 
 .scroll-top:hover {
-    transform: scale(1.1);
+    transform: scale(1.1) translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 255, 136, 0.5);
+}
+
+.scroll-top:active {
+    transform: scale(0.95) translateY(0);
+}
+
+.scroll-top .material-icons {
+    font-size: 1.5rem;
+    pointer-events: none;
 }
 
 /* Background Particles */
@@ -2360,6 +2379,26 @@ section {
         grid-template-columns: 1fr;
         text-align: center;
         gap: 2rem;
+        padding-top: 2rem;
+        width: 100%;
+    }
+
+    .hero {
+        min-height: 100vh;
+        padding-top: 90px;
+        align-items: flex-start;
+        justify-content: center;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+        line-height: 1.2;
+        margin-bottom: 1rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
     }
 
     /* Fix code window text alignment on mobile */
@@ -2387,6 +2426,15 @@ section {
 
     .hero-title {
         font-size: 2.5rem;
+        line-height: 1.2;
+        margin-bottom: 1rem;
+        margin-top: 1rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        padding: 0 1rem;
     }
 
     .section-title {
@@ -2409,6 +2457,19 @@ section {
 
     .footer-links {
         grid-template-columns: 1fr;
+    }
+
+    /* Scroll to top button mobile optimization */
+    .scroll-top {
+        bottom: 1.5rem;
+        right: 1.5rem;
+        width: 45px;
+        height: 45px;
+        z-index: 9999;
+    }
+    
+    .scroll-top .material-icons {
+        font-size: 1.3rem;
     }
 
     .hero-buttons {
@@ -2634,6 +2695,59 @@ section {
     font-size: 1rem;
     line-height: 1.6;
     margin-bottom: 0.25rem;
+}
+
+/* Contact Links */
+.contact-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+    display: inline-block;
+    padding: 0.2rem 0;
+}
+
+.contact-link:hover {
+    color: var(--accent-primary);
+    transform: translateX(3px);
+}
+
+.contact-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--gradient-primary);
+    transition: width 0.3s ease;
+}
+
+.contact-link:hover::after {
+    width: 100%;
+}
+
+/* Add cursor pointer and active state */
+.contact-link:active {
+    transform: translateX(1px);
+}
+
+/* QR Code Link */
+.qr-link {
+    display: block;
+    text-decoration: none;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+
+.qr-link:hover {
+    transform: scale(1.05);
+}
+
+/* Enhanced QR code hover effect */
+.qr-code:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 30px rgba(0, 255, 136, 0.4);
 }
 
 .contact-visual {
