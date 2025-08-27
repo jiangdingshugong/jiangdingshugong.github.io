@@ -496,17 +496,17 @@ class App {
         const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
         
         if (isMobile) {
-            // Try to open WeChat Work app
-            const wechatWorkUrl = 'wxwork://message';
-            const wechatUrl = 'weixin://';
+            // // Try to open WeChat Work app
+            // const wechatWorkUrl = 'wxwork://message';
+            // const wechatUrl = 'weixin://';
             
-            // Try WeChat Work first
-            window.location.href = wechatWorkUrl;
+            // // Try WeChat Work first
+            // window.location.href = wechatWorkUrl;
             
-            // Fallback to regular WeChat after a short delay
-            setTimeout(() => {
-                window.location.href = wechatUrl;
-            }, 1000);
+            // // Fallback to regular WeChat after a short delay
+            // setTimeout(() => {
+            //     window.location.href = wechatUrl;
+            // }, 1000);
             
             // If neither works, show instructions
             setTimeout(() => {
